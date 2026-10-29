@@ -1,0 +1,9 @@
+Model,Type,Train_MAE,Train_RMSE,Train_R2,Test_MAE,Test_MSE,Test_RMSE,Test_R2,R2_gap_train_minus_test
+Simple Linear Regression,Model,42.9789,75.9203,0.8188,41.2026,4821.2159,69.435,0.8254,-0.0067
+Multiple Linear Regression,Model,42.8183,75.0259,0.823,39.5463,4595.6736,67.7914,0.8336,-0.0106
+Polynomial Regression (degree 2),Model,42.4323,74.3975,0.826,39.6575,4726.4523,68.7492,0.8289,-0.0029
+Decision Tree Regressor,Model,40.6632,70.2186,0.845,40.7661,4911.378,70.0812,0.8222,0.0228
+Random Forest Regressor,Model,35.7713,60.4369,0.8852,40.6706,4699.8574,68.5555,0.8298,0.0553
+Gradient Boosting Regressor,Model,41.5496,71.5975,0.8388,39.831,4562.2636,67.5445,0.8348,0.004
+Baseline: same month last year,Baseline,55.7316,100.0317,0.6854,53.2566,8852.2754,94.0865,0.6795,0.0059
+Baseline: training average of subdivision-month,Baseline,41.227,73.6331,0.8295,41.2345,4983.3312,70.5927,0.8196,0.01

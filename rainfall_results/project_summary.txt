@@ -1,0 +1,338 @@
+PROJECT SUMMARY: Rainfall Prediction and Pattern Analysis Using Historical Indian Meteorological Data (INT234 Predictive Analytics)
+Dataset used: /Users/ramcharanteja/Desktop/Sub_Division_IMD_2017.csv
+
+Dataset loaded from: /Users/ramcharanteja/Desktop/Sub_Division_IMD_2017.csv
+
+==============================================================================
+STEP 1: DATASET INSPECTION
+==============================================================================
+Data rows (excluding header): 4188
+Columns: 19
+
+Column names and data types:
+SUBDIVISION        str
+YEAR             int64
+JAN            float64
+FEB            float64
+MAR            float64
+APR            float64
+MAY            float64
+JUN            float64
+JUL            float64
+AUG            float64
+SEP            float64
+OCT            float64
+NOV            float64
+DEC            float64
+ANNUAL         float64
+JF             float64
+MAM            float64
+JJAS           float64
+OND            float64
+
+Missing values per column (only columns with missing values):
+        missing  percent
+JAN           4     0.10
+FEB           3     0.07
+MAR           6     0.14
+APR           4     0.10
+MAY           3     0.07
+JUN           5     0.12
+JUL           7     0.17
+AUG           4     0.10
+SEP           6     0.14
+OCT           7     0.17
+NOV          11     0.26
+DEC          10     0.24
+ANNUAL       26     0.62
+JF            6     0.14
+MAM           9     0.21
+JJAS         10     0.24
+OND          13     0.31
+
+Total missing cells: 134
+Fully duplicated rows: 0
+
+Numerical columns (18): ['YEAR', 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'ANNUAL', 'JF', 'MAM', 'JJAS', 'OND']
+Categorical columns (1): ['SUBDIVISION']
+
+Summary statistics of numerical columns:
+         count     mean     std     min      25%      50%      75%     max
+YEAR    4188.0  1959.22   33.72  1901.0  1930.00  1959.00  1988.00  2017.0
+JAN     4184.0    18.94   33.79     0.0     0.60     5.95    22.00   583.7
+FEB     4185.0    21.60   35.73     0.0     0.50     6.50    26.60   403.5
+MAR     4182.0    27.41   46.93     0.0     1.00     7.90    31.38   605.6
+APR     4184.0    43.07   68.15     0.0     3.00    15.45    49.65   595.1
+MAY     4185.0    85.66  122.70     0.0     8.60    36.90    97.80  1168.6
+JUN     4183.0   230.12  234.29     0.4    70.80   138.80   305.00  1609.9
+JUL     4181.0   347.02  268.85     0.0   175.60   285.00   418.50  2362.8
+AUG     4184.0   289.74  188.43     0.0   155.85   258.50   377.62  1664.6
+SEP     4182.0   197.32  135.55     0.1   100.40   173.70   266.12  1222.0
+OCT     4181.0    95.32   99.19     0.0    14.60    65.20   148.30   948.3
+NOV     4177.0    39.50   68.36     0.0     0.60     9.40    45.30   648.9
+DEC     4178.0    18.97   43.05     0.0     0.10     3.00    17.50   617.5
+ANNUAL  4162.0  1409.45  902.60    62.3   803.02  1120.35  1643.58  6331.1
+JF      4182.0    40.52   59.29     0.0     4.00    18.90    50.18   699.5
+MAM     4179.0   155.82  201.20     0.0    24.00    74.80   196.95  1745.8
+JJAS    4178.0  1063.85  706.67    57.4   573.85   880.60  1287.45  4536.9
+OND     4175.0   153.65  166.86     0.0    34.00    97.70   211.80  1252.5
+
+Categorical column 'SUBDIVISION': 36 unique values
+SUBDIVISION
+Assam & Meghalaya                     117
+Naga Mani Mizo Tripura                117
+Sub Himalayan West Bengal & Sikkim    117
+Gangetic West Bengal                  117
+Orissa                                117
+
+Dataset row check passed: 4188 data rows.
+
+Detected data format: WIDE (subdivision column = 'SUBDIVISION', year column = 'YEAR')
+Monthly columns found: JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC
+The wide table (one row per subdivision-year, one column per month) will be converted to long format (one row per subdivision-year-month).
+
+==============================================================================
+STEP 2: DATA CLEANING
+==============================================================================
+Rows removed because subdivision/year/month was invalid: 0
+Duplicate subdivision-year-month records removed: 0
+Negative rainfall values set to missing: 0
+Rows added for years/months missing from the file (left as NaN): 108
+Missing monthly rainfall values after cleaning: 178 of 50364 (0.35%)
+Missing rainfall values are NOT replaced by zero and are NOT guessed; rows with missing values are excluded only where a model needs a complete row.
+Long-format rows: 50364  | subdivisions: 36  | years: 1901-2017
+
+Consistency check: provided ANNUAL vs sum of 12 months (4162 complete years): median difference 0.10 mm, maximum difference 0.40 mm.
+
+==============================================================================
+STEP 3: OUTLIER ANALYSIS (IQR rule, flagged but kept)
+==============================================================================
+Observations flagged as outliers (1.5*IQR): 2633 (5.25%)
+Observations beyond 3*IQR (extreme): 1087
+Flagged values are kept: they are valid extreme-rainfall observations. Tree models handle them well; linear models can be influenced by them.
+
+Five highest monthly rainfall values in the data (kept):
+      SUBDIVISION  YEAR  MONTH  RAINFALL
+Arunachal Pradesh  1948      7    2362.8
+Coastal Karnataka  1908      7    1904.9
+Coastal Karnataka  1961      7    1884.9
+     Konkan & Goa  1931      7    1867.2
+Coastal Karnataka  2009      7    1778.9
+
+==============================================================================
+STEP 4: FEATURE ENGINEERING
+==============================================================================
+Features created: YEAR, MONTH_SIN, MONTH_COS, LAG_1, LAG_2, LAG_12, ROLL_3, ROLL_12, CLIM_PAST (+ SUBDIVISION, one-hot encoded inside the models).
+Lags and rolling means only look at PAST months, so a prediction for month t never uses rainfall from month t or later (one-step-ahead forecasting).
+  saved file: cleaned_rainfall.csv
+
+==============================================================================
+STEP 5: EXPLORATORY DATA ANALYSIS (graphs)
+==============================================================================
+Subdivisions highlighted in comparison graphs: ['Punjab', 'Kerala', 'West Rajasthan', 'Assam & Meghalaya']
+  displaying selected plot: eda_annual_trend.png
+  saved plot: eda_annual_trend.png
+  displaying selected plot: eda_monthly_pattern.png
+  saved plot: eda_monthly_pattern.png
+  displaying selected plot: eda_distributions.png
+  saved plot: eda_distributions.png
+  Skewness of monthly rainfall: 2.82 (strongly right-skewed if well above 1)
+  saved plot: eda_boxplot_monthly.png
+  saved plot: eda_boxplot_annual_by_subdivision.png
+  displaying selected plot: eda_correlation_heatmap.png
+  saved plot: eda_correlation_heatmap.png
+  saved plot: eda_regional_comparison.png
+  displaying selected plot: eda_subdivision_month_rainfall_heatmap.png
+  saved plot: eda_subdivision_month_rainfall_heatmap.png
+  displaying selected plot: eda_annual_rainfall_heatmap.png
+  saved plot: eda_annual_rainfall_heatmap.png
+
+==============================================================================
+STEP 6: SUPERVISED LEARNING - REGRESSION
+==============================================================================
+Target variable: RAINFALL (monthly rainfall in mm per subdivision)
+Rows available for modelling: 49455 of 50364 (rows with a missing target/feature, e.g. the first 12 months of each series, are excluded rather than filled with zero)
+Chronological split -> training years: 1902-1994 (39563 rows) | test years: 1995-2017 (9892 rows)
+Simple Linear Regression feature (highest |correlation| in training data): CLIM_PAST (r = 0.905)
+
+Training: Simple Linear Regression ...
+  done. Test RMSE = 69.43 mm, Test R2 = 0.825
+
+Training: Multiple Linear Regression ...
+  done. Test RMSE = 67.79 mm, Test R2 = 0.834
+
+Training: Polynomial Regression (degree 2) ...
+  done. Test RMSE = 68.75 mm, Test R2 = 0.829
+
+Training: Decision Tree Regressor ...
+  done. Test RMSE = 70.08 mm, Test R2 = 0.822
+
+Training: Random Forest Regressor ...
+  done. Test RMSE = 68.56 mm, Test R2 = 0.830
+
+Training: Gradient Boosting Regressor ...
+  done. Test RMSE = 67.54 mm, Test R2 = 0.835
+
+==============================================================================
+MODEL COMPARISON (test set = most recent years)
+==============================================================================
+                                          Model     Type  Train_MAE  Train_RMSE  Train_R2  Test_MAE  Test_MSE  Test_RMSE  Test_R2  R2_gap_train_minus_test
+                       Simple Linear Regression    Model    42.9789     75.9203    0.8188   41.2026 4821.2159    69.4350   0.8254                  -0.0067
+                     Multiple Linear Regression    Model    42.8183     75.0259    0.8230   39.5463 4595.6736    67.7914   0.8336                  -0.0106
+               Polynomial Regression (degree 2)    Model    42.4323     74.3975    0.8260   39.6575 4726.4523    68.7492   0.8289                  -0.0029
+                        Decision Tree Regressor    Model    40.6632     70.2186    0.8450   40.7661 4911.3780    70.0812   0.8222                   0.0228
+                        Random Forest Regressor    Model    35.7713     60.4369    0.8852   40.6706 4699.8574    68.5555   0.8298                   0.0553
+                    Gradient Boosting Regressor    Model    41.5496     71.5975    0.8388   39.8310 4562.2636    67.5445   0.8348                   0.0040
+                 Baseline: same month last year Baseline    55.7316    100.0317    0.6854   53.2566 8852.2754    94.0865   0.6795                   0.0059
+Baseline: training average of subdivision-month Baseline    41.2270     73.6331    0.8295   41.2345 4983.3312    70.5927   0.8196                   0.0100
+  saved file: model_comparison.csv
+  saved file: regression_predictions.csv
+
+Best model on the test set (lowest RMSE): Gradient Boosting Regressor (RMSE 67.54 mm, MAE 39.83 mm, R2 0.835)
+  Reference 'Baseline: same month last year' (RMSE 94.09) is not better than the best model.
+  Reference 'Baseline: training average of subdivision-month' (RMSE 70.59) is not better than the best model.
+
+Training vs testing performance (rule-of-thumb interpretation):
+  Simple Linear Regression: train R2 0.819, test R2 0.825, gap -0.007 -> train and test R2 are similar -> no strong sign of overfitting
+  Multiple Linear Regression: train R2 0.823, test R2 0.834, gap -0.011 -> train and test R2 are similar -> no strong sign of overfitting
+  Polynomial Regression (degree 2): train R2 0.826, test R2 0.829, gap -0.003 -> train and test R2 are similar -> no strong sign of overfitting
+  Decision Tree Regressor: train R2 0.845, test R2 0.822, gap 0.023 -> train and test R2 are similar -> no strong sign of overfitting
+  Random Forest Regressor: train R2 0.885, test R2 0.830, gap 0.055 -> train R2 somewhat above test R2 -> mild overfitting tendency
+  Gradient Boosting Regressor: train R2 0.839, test R2 0.835, gap 0.004 -> train and test R2 are similar -> no strong sign of overfitting
+(The 0.5, 0.10 and 0.05 thresholds are only rough guides, not strict rules.)
+
+Multiple Linear Regression coefficients of numeric features (features standardised, so sizes are comparable; association only, not causation):
+CLIM_PAST    144.300
+ROLL_3       -12.070
+LAG_1         10.772
+ROLL_12       10.717
+LAG_12        10.422
+LAG_2          6.733
+MONTH_SIN     -3.054
+MONTH_COS     -2.761
+YEAR          -1.748
+
+Random Forest feature importance (top 10; SUBDIVISION dummies are summed):
+CLIM_PAST                    0.9336
+LAG_12                       0.0114
+YEAR                         0.0110
+ROLL_12                      0.0108
+LAG_1                        0.0093
+LAG_2                        0.0087
+ROLL_3                       0.0077
+SUBDIVISION (all dummies)    0.0057
+MONTH_COS                    0.0011
+MONTH_SIN                    0.0008
+  displaying selected plot: model_actual_vs_predicted.png
+  saved plot: model_actual_vs_predicted.png
+  saved plot: model_residuals.png
+  saved plot: model_comparison.png
+  displaying selected plot: model_metrics_heatmap.png
+  saved plot: model_metrics_heatmap.png
+  saved plot: model_best_residual_heatmap.png
+  saved plot: model_timeseries_example.png
+  saved plot: model_feature_importance_randomforest.png
+  saved plot: model_feature_importance_gradientboosting.png
+
+==============================================================================
+STEP 7: UNSUPERVISED LEARNING - K-MEANS CLUSTERING AND PCA
+==============================================================================
+Clustering 36 subdivisions using their 12 average monthly rainfall values (mm).
+
+Elbow / silhouette results:
+ k  inertia  silhouette
+ 2  262.268       0.495
+ 3  193.756       0.490
+ 4  151.082       0.518
+ 5  109.101       0.534
+ 6   84.192       0.421
+ 7   67.103       0.413
+ 8   55.520       0.293
+
+k with highest silhouette score: 5. Using k = 5.
+  saved plot: cluster_elbow_silhouette.png
+
+PCA: PC1 explains 47.8% and PC2 explains 24.1% of the variance (total 71.9%).
+  saved file: cluster_assignments.csv
+  saved file: cluster_summary.csv
+
+Cluster characteristics (descriptive, based only on the data):
+  Cluster 0: 2 subdivisions, mean annual rainfall about 3191 mm (range 2988-3395), June-September share about 91% of the year, most common peak month Jul.
+     Members: Coastal Karnataka; Konkan & Goa
+  Cluster 1: 3 subdivisions, mean annual rainfall about 1286 mm (range 1137-1464), June-September share about 61% of the year, most common peak month Jul.
+     Members: Himachal Pradesh; Jammu & Kashmir; Uttarakhand
+  Cluster 2: 4 subdivisions, mean annual rainfall about 2095 mm (range 940-2929), June-September share about 56% of the year, most common peak month Jun.
+     Members: Andaman & Nicobar Islands; Kerala; Lakshadweep; Tamil Nadu
+  Cluster 3: 4 subdivisions, mean annual rainfall about 2797 mm (range 2433-3424), June-September share about 69% of the year, most common peak month Jul.
+     Members: Arunachal Pradesh; Assam & Meghalaya; Naga Mani Mizo Tripura; Sub Himalayan West Bengal & Sikkim
+  Cluster 4: 23 subdivisions, mean annual rainfall about 936 mm (range 294-1491), June-September share about 82% of the year, most common peak month Jul.
+     Members: Bihar; Chhattisgarh; Coastal Andhra Pradesh; East Madhya Pradesh; East Rajasthan; East Uttar Pradesh; Gangetic West Bengal; Gujarat Region; Haryana Delhi & Chandigarh; Jharkhand; Madhya Maharashtra; Matathwada; North Interior Karnataka; Orissa; Punjab; Rayalseema; Saurashtra & Kutch; South Interior Karnataka; Telangana; Vidarbha; West Madhya Pradesh; West Rajasthan; West Uttar Pradesh
+These clusters group subdivisions with similar average monthly rainfall profiles. They are NOT official climate, drought or flood categories.
+  saved plot: cluster_pca_scatter.png
+  saved plot: cluster_monthly_profiles.png
+
+==============================================================================
+STEP 8: FINAL NOTES
+==============================================================================
+Best regression model: Gradient Boosting Regressor.
+K-Means used k = 5 (silhouette 0.534).
+All results above were computed from the supplied dataset only.
+
+GENERAL DISCUSSION (concepts; see the numerical results above for this dataset)
+
+Bias-variance trade-off: A model with high bias is too simple and misses real patterns
+(underfitting). A model with high variance follows the training data too closely and
+does not generalise (overfitting). Comparing training and test scores for each model
+shows where it lies on this scale.
+
+Underfitting and overfitting: Underfitting appears as poor scores on both training and
+test data. Overfitting appears as clearly better training scores than test scores.
+Limiting tree depth and leaf size (used here) reduces overfitting.
+
+Feature importance: Random Forest importance and linear-model coefficients describe
+how much a model USES a feature. They show association, not physical cause and effect.
+
+Model limitations:
+ - Only past rainfall, calendar information and subdivision identity are used. No
+   temperature, humidity, pressure, ENSO or other physical drivers are included.
+ - Monthly rainfall is highly skewed and has many near-zero months, which makes
+   point prediction of single months difficult.
+ - Subdivision-level monthly totals hide local and daily variation.
+ - Rows with missing values were excluded from modelling; they were not imputed.
+ - The test period is the most recent block of years; results may differ for other periods,
+   and climate may change over time.
+ - One-step-ahead prediction uses the true rainfall of previous months. Forecasting several
+   months ahead would give weaker results.
+ - K-Means clusters depend on chosen features, scaling and k; they are descriptive only.
+
+Potential uses and limits: Such models can support exploratory analysis, planning
+discussions and as a baseline for more advanced forecasting. They are not a replacement
+for operational weather forecasts and should not be used alone for safety-critical
+decisions such as flood warnings.
+
+FILES CREATED IN THIS RUN:
+  - cleaned_rainfall.csv
+  - eda_annual_trend.png
+  - eda_monthly_pattern.png
+  - eda_distributions.png
+  - eda_boxplot_monthly.png
+  - eda_boxplot_annual_by_subdivision.png
+  - eda_correlation_heatmap.png
+  - eda_regional_comparison.png
+  - eda_subdivision_month_rainfall_heatmap.png
+  - eda_annual_rainfall_heatmap.png
+  - model_comparison.csv
+  - regression_predictions.csv
+  - model_actual_vs_predicted.png
+  - model_residuals.png
+  - model_comparison.png
+  - model_metrics_heatmap.png
+  - model_best_residual_heatmap.png
+  - model_timeseries_example.png
+  - model_feature_importance_randomforest.png
+  - model_feature_importance_gradientboosting.png
+  - cluster_elbow_silhouette.png
+  - cluster_assignments.csv
+  - cluster_summary.csv
+  - cluster_pca_scatter.png
+  - cluster_monthly_profiles.png
