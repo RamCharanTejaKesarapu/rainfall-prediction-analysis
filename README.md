@@ -174,6 +174,7 @@ Using the 12-month normalized rainfall distribution for each subdivision, K-Mean
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                        # GitHub Actions automated test & build pipeline
+├── project.py                            # Interactive pipeline displaying all popups sequentially
 ├── rainfall_prediction.py                # Main executable pipeline (supports CLI flags)
 ├── rainfall_prediction_8_popups.py       # Interactive popup execution script
 ├── requirements.txt                      # Project dependencies
